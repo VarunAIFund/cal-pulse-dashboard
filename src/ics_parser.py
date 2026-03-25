@@ -2,7 +2,6 @@ import re
 from datetime import datetime, timedelta
 from typing import List, Dict, Optional, Tuple
 from icalendar import Calendar, Event
-import pytz
 from dateutil.rrule import rrule, DAILY, WEEKLY, MONTHLY, YEARLY
 import pandas as pd
 
@@ -67,11 +66,10 @@ class ICSParser:
             
             # Handle timezone conversion
             if hasattr(start_time, 'tzinfo') and start_time.tzinfo:
-                # Convert to local timezone
-                local_tz = pytz.timezone('America/New_York')  # Default to EST
-                if start_time.tzinfo != local_tz:
-                    start_time = start_time.astimezone(local_tz)
-                    end_time = end_time.astimezone(local_tz)
+                # Convert to the system's local timezone
+                local_tz = datetime.now().astimezone().tzinfo
+                start_time = start_time.astimezone(local_tz)
+                end_time = end_time.astimezone(local_tz)
             
             # Get attendees
             attendees = []
@@ -180,10 +178,7 @@ class ICSParser:
 
     def filter_last_30_days(self, events: List[Dict]) -> List[Dict]:
         """Filter events to only include those from the last 30 days"""
-        end_date = datetime.now()
-        if end_date.tzinfo is None:
-            end_date = pytz.timezone('America/New_York').localize(end_date)
-        
+        end_date = datetime.now().astimezone()
         start_date = end_date - timedelta(days=30)
         
         # Expand recurring events within the 30-day window
@@ -194,8 +189,8 @@ class ICSParser:
         for event in expanded_events:
             event_start = event['start_time']
             if event_start.tzinfo is None:
-                event_start = pytz.timezone('America/New_York').localize(event_start)
-            
+                event_start = event_start.astimezone()
+
             if start_date <= event_start <= end_date:
                 filtered_events.append(event)
         

@@ -1,133 +1,191 @@
 # Cal Pulse Dashboard
 
-A web application that analyzes Apple Calendar ICS files to provide productivity insights and recommendations.
+![Python](https://img.shields.io/badge/Python-3.8%2B-3776AB?style=flat-square&logo=python&logoColor=white)
+![Streamlit](https://img.shields.io/badge/Streamlit-1.29-FF4B4B?style=flat-square&logo=streamlit&logoColor=white)
+![Plotly](https://img.shields.io/badge/Plotly-5.18-3F4F75?style=flat-square&logo=plotly&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)
+![Privacy](https://img.shields.io/badge/Privacy-100%25%20Local-brightgreen?style=flat-square)
+
+**Upload your Apple Calendar export and get an instant, private breakdown of where your time actually goes.**
+
+---
+
+## Overview
+
+Cal Pulse Dashboard turns a raw `.ics` calendar export into a visual productivity report in seconds. It classifies every event on your calendar, calculates how much of your workday is consumed by meetings versus left open for deep work, and surfaces specific recommendations to reclaim your schedule — all without sending a single byte of your data anywhere.
+
+---
+
+## How It Works
+
+```
+Export .ics from Apple Calendar
+        │
+        ▼
+   ICS Parser          — extracts & expands recurring events, normalises timezones
+        │
+        ▼
+  Event Classifier     — scores each event against meeting / focus / personal keyword sets
+        │
+        ▼
+ Metrics Engine        — calculates hours, percentages, and a 0–100 productivity score
+        │
+        ▼
+Insights Generator     — produces prioritised insights and actionable recommendations
+        │
+        ▼
+  Chart Generator      — renders interactive Plotly visualisations
+        │
+        ▼
+  Streamlit Dashboard  — displays everything in a clean, single-page UI
+```
+
+---
 
 ## Features
 
-- **Calendar Analysis**: Parse ICS files from Apple Calendar
-- **Smart Classification**: Automatically categorize events as meetings, focus time, or personal
-- **Productivity Metrics**: Calculate meeting load, focus time, and productivity scores
-- **Visual Insights**: Interactive charts and visualizations
-- **Actionable Recommendations**: Get specific tips to optimize your schedule
-- **Privacy-First**: All processing happens locally - no data is stored or transmitted
+### Metrics Calculated
+| Metric | Description |
+|--------|-------------|
+| **Meeting Hours** | Total hours in meetings over the last 30 days |
+| **Available Focus Time** | Unscheduled weekday business hours (9 AM – 5 PM) |
+| **Productivity Score** | Composite 0–100 calendar health score |
+| **Meeting Load %** | Share of business hours consumed by meetings |
+| **Avg Meeting Duration** | Mean length of detected meetings |
+| **Peak Meeting Hour** | Hour of day with the highest meeting concentration |
+| **Schedule Consistency** | Day-to-day variance in available focus time |
+| **Meetings per Day** | Average daily meeting count |
 
-## How to Use
+### Visualisations
+- **Time Allocation Donut** — meetings vs focus time vs free time
+- **Daily Activity Bar Chart** — stacked daily hours over 30 days
+- **Weekly Heatmap** — activity intensity by hour and day of week
+- **Productivity Gauge** — real-time score with colour-coded bands
+- **Meeting vs Focus Comparison** — side-by-side hour totals
 
-1. **Export Your Calendar**:
-   - Open Calendar app on Mac
-   - Select File → Export → Export...
-   - Choose date range (last 30 days recommended)
-   - Save as .ics file
+### Smart Event Classification
 
-2. **Run the Application**:
-   ```bash
-   pip install -r requirements.txt
-   streamlit run app.py
-   ```
+Events are scored against three weighted rule sets:
 
-3. **Upload & Analyze**:
-   - Upload your ICS file using the sidebar
-   - View your productivity insights and recommendations
+- **Meeting** — multiple attendees, keywords (`standup`, `sync`, `review`, `1:1`, `all-hands`, …), conference room locations, 30–90 min durations
+- **Focus** — solo/no attendees, keywords (`deep work`, `blocked`, `dnd`, `architecture`, …), 2+ hour blocks
+- **Personal** — excluded from work analysis (`lunch`, `gym`, `doctor`, `vacation`, `ooo`, …)
 
-## Installation
+---
+
+## Privacy
+
+> **Your calendar data never leaves your machine.**
+
+- No external API calls
+- No database writes
+- No telemetry or analytics
+- File is held in memory only for the duration of the session
+
+This is a deliberate design choice. Calendar data is sensitive — it reveals your work patterns, relationships, and routines. Cal Pulse processes everything locally using Python and renders results entirely in your browser via Streamlit.
+
+---
+
+## Setup
+
+### Prerequisites
+- Python 3.8 or higher
+- pip
+
+### Installation
 
 ```bash
-# Clone or download the project
+# 1. Clone the repo
+git clone https://github.com/your-username/cal-pulse-dashboard.git
 cd cal-pulse-dashboard
 
-# Install dependencies
-pip install -r requirements.txt
+# 2. Create and activate a virtual environment (recommended)
+python -m venv .venv
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
 
-# Run the application
-streamlit run app.py
+# 3. Install dependencies
+pip install -r requirements.txt
 ```
+
+---
+
+## Usage
+
+### 1. Export Your Apple Calendar
+
+1. Open **Calendar** on macOS
+2. Go to **File → Export → Export…**
+3. Select a date range (last 30–60 days recommended)
+4. Save the `.ics` file somewhere accessible
+
+### 2. Start the Dashboard
+
+```bash
+streamlit run app.py
+# or
+python run.py
+```
+
+The app opens at `http://localhost:8501`.
+
+### 3. Upload and Explore
+
+Upload the `.ics` file via the sidebar. The dashboard populates immediately with metrics, charts, insights, and recommendations.
+
+---
 
 ## Project Structure
 
 ```
 cal-pulse-dashboard/
-├── app.py                 # Main Streamlit application
-├── requirements.txt       # Python dependencies
+├── app.py                  # Streamlit entry point and UI layout
+├── run.py                  # Optional convenience launcher
+├── requirements.txt        # Pinned dependencies
 ├── src/
-│   ├── ics_parser.py     # ICS file parsing and event extraction
-│   ├── metrics.py        # Productivity metrics calculation
-│   ├── insights.py       # Insights generation and recommendations
-│   └── charts.py         # Chart generation with Plotly
-├── data/                 # Sample data (optional)
-├── tests/                # Test files
-└── README.md            # This file
+│   ├── ics_parser.py       # ICS parsing, recurring event expansion, classification
+│   ├── metrics.py          # Productivity metrics and scoring engine
+│   ├── insights.py         # Rule-based insight and recommendation generation
+│   └── charts.py           # Plotly chart builders
+├── data/
+│   └── sample_calendar.ics # Anonymised sample data for testing
+└── test_free_time.py       # Manual verification script for focus-time logic
 ```
 
-## Key Metrics
+---
 
-- **Meeting Load**: Percentage of time spent in meetings
-- **Focus Time**: Dedicated time for deep work
-- **Productivity Score**: Overall calendar health (0-100)
-- **Fragmentation Score**: How scattered your focus time is
-- **Peak Hours**: When you're most busy
+## Tech Stack
 
-## Classification Logic
+| Layer | Technology |
+|-------|-----------|
+| UI | [Streamlit](https://streamlit.io) |
+| Data processing | [pandas](https://pandas.pydata.org) |
+| Visualisation | [Plotly](https://plotly.com/python/) |
+| Calendar parsing | [icalendar](https://icalendar.readthedocs.io) |
+| Date/recurrence | [python-dateutil](https://dateutil.readthedocs.io) |
 
-The application uses rule-based logic to classify events:
-
-### Meeting Indicators:
-- Multiple attendees
-- Keywords: "meeting", "call", "standup", "sync", "review"
-- Typical durations (30min, 1hr)
-- Conference room locations
-
-### Focus Time Indicators:
-- Single attendee or no attendees
-- Keywords: "focus", "deep work", "coding", "development"
-- Longer durations (2+ hours)
-- Blocked time
-
-### Exclusions:
-- Personal events: "lunch", "doctor", "gym"
-- Out of office: "vacation", "holiday", "sick"
-
-## Technical Details
-
-- **Frontend**: Streamlit for web interface
-- **Backend**: Python with pandas for data processing
-- **Charts**: Plotly for interactive visualizations
-- **Calendar Parsing**: icalendar library for ICS file processing
-- **Timezone Handling**: pytz for timezone conversion
-
-## Privacy & Security
-
-- No data is stored or transmitted
-- All processing happens locally on your machine
-- Calendar data never leaves your device
-- No external API calls required
-
-## Requirements
-
-- Python 3.7+
-- See `requirements.txt` for package dependencies
+---
 
 ## Troubleshooting
 
-### Common Issues:
+| Problem | Solution |
+|---------|----------|
+| "No events found" | Confirm the export includes the desired date range |
+| "Error parsing ICS file" | Use the **File → Export** path in Apple Calendar; third-party exports may differ |
+| Empty dashboard after upload | Your export may not contain events in the last 30 days — try a wider export window |
+| Timezone looks wrong | Events are converted to your system's local timezone automatically |
 
-1. **"No events found"**: Check your calendar export includes the desired date range
-2. **"Error parsing ICS file"**: Ensure the file is exported from Apple Calendar in ICS format
-3. **Empty dashboard**: The file may not contain events in the last 30 days
+---
 
-### Getting Help:
+## Roadmap
 
-1. Check that your ICS file is valid
-2. Ensure all dependencies are installed
-3. Try with a different date range in your calendar export
+- [ ] Google Calendar and Outlook `.ics` export support
+- [ ] Configurable analysis window (7 / 14 / 30 / 90 days)
+- [ ] Meeting-free day detection and suggestions
+- [ ] Week-over-week trend comparison
+- [ ] Export insights as PDF report
 
-## Future Enhancements
-
-- Support for other calendar formats (Google Calendar, Outlook)
-- Machine learning-based event classification
-- Integration with productivity tools
-- Historical trend analysis
-- Team calendar analysis
+---
 
 ## License
 
-This project is provided as-is for educational and personal use.# project-3
+MIT — free to use, modify, and distribute.
